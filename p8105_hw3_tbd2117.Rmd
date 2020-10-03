@@ -52,33 +52,46 @@ instacart %>%
 ```{r}
 aisle_df =
   instacart %>% 
-    group_by(aisle_id) %>% 
+    group_by(aisle) %>% 
     summarize(
       n_item = n()
-    ) %>% 
-    mutate(aisle_rank = rank(desc(n_item))) %>% 
-    arrange(aisle_rank)
+    ) %>%
+    arrange(desc(n_item))
 ```
 
-There are `r nrow(aisle_df)` aisles with most itens ordered from aisles `r head(pull(aisle_df, aisle_id))`.
+There are `r nrow(aisle_df)` aisles with most itens ordered from aisles `r head(pull(aisle_df, aisle))`.
 
 **Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.**
 
 ```{r}
 aisle_df %>% 
   filter(n_item > 10000) %>%
-  ggplot(aes(x = reorder(aisle_id, aisle_rank), y = n_item, fill=aisle_id)) + 
+  ggplot(aes(x = reorder(aisle, desc(n_item)), y = n_item)) + 
   geom_col() +
   theme(
     legend.position = "none",
-    axis.text.x = element_text(angle=45)
+    axis.text.x = element_text(angle=45, hjust = 1)
   ) + 
   labs(
-    title = "Items Ordered in Each Aisle",
-    x = "Aisle ID",
-    y = "Number of Items"
+    title = "Number of Items Ordered in each Aisle",
+    x = "Aisle",
+    y = "Number of Items Ordered"
   )
 ```
 
-Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
-Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
+**Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.**
+
+```{r}
+instacart %>%
+  filter(aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>%
+  select(aisle, product_name) %>%
+  group_by(aisle, product_name) %>%
+  summarise(
+    n_item = n()
+  ) %>%
+  arrange(desc(n_item)) %>%
+  slice(1:3) %>% 
+  knitr::kable()
+```
+
+**Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).**
