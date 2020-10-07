@@ -179,25 +179,69 @@ instacart %>%
 
 ### Problem 2
 
-```{r, eval = FALSE}
+**Load, tidy, and otherwise wrangle the data. Your final dataset should include all originally observed variables and values; have useful variable names; include a weekday vs weekend variable; and encode data with reasonable variable classes. Describe the resulting dataset (e.g. what variables exist, how many observations, etc).**
+
+```{r}
+accel_df = 
+  read_csv("./data/accel_data.csv") %>% 
+  janitor::clean_names() %>%
+  group_by(week) %>%
+  pivot_longer(
+    cols = activity_1:activity_1440,
+    names_to = "minute",
+    names_prefix = "activity_",
+    values_to = "activity"
+  ) %>%
+  mutate(
+    day = factor(day),
+    day = forcats::fct_relevel(day, c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")),
+    weekend = factor(case_when(
+      day == "Saturday" ~ "Weekend",
+      day == "Sunday" ~ "Weekend",
+      TRUE ~ "Weekday"
+    )),
+    minute = as.numeric(minute)
+  ) %>% 
+  select(week, day, weekend, day_id, minute, activity)
+```
+
+The _accel_df_ dataset contains data on accelerometer activity collected on a 63 year-old male with BMI 25. Each row in the dataset is the activity in one minute in a day within a week. The dataset has `r nrow(accel_df)` rows and `r ncol(accel_df)` columns. 
+
+**Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?**
+
+```{r}
+accel_df %>% 
+  group_by(week, day) %>% 
+  summarise(
+    activity_day = sum(activity)
+  ) %>% 
+  knitr::kable()
+```
+
+In the first two weeks, he was less active on mondays and progressivly increased his activity until friday.
+He tended to be fairly active during weekends, except for the last two weeks - he probably did not use his accelerometer on the last two saturdays.
+
+**Accelerometer data allows the inspection activity over the course of the day. Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.**
+
+```{r, include = FALSE}
 #live session
 
-1 pivot
-  make sure values are numeric for activity in each minute
+#1 pivot
+#make sure values are numeric for activity in each minute
 
-2 group_by(day) %>% 
-  summarise()
+#2 group_by(day) %>% 
+#summarise()
 
-3 ggplot - x = minutes, y = activity count, color = day of the week
-geom_line
+#3 ggplot - x = minutes, y = activity count, color = day of the week
+#geom_line
   
 ```
 
 ### Problem 3
 
-```{r, eval = FALSE}
+```{r, include = FALSE}
 #live session
 
-3 plot1 - contour/ hex (not scatter)  plot2 ridge  patchwork
+#3 plot1 - contour/ hex (not scatter)  plot2 ridge  patchwork
 ```
 
