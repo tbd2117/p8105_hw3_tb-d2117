@@ -6,6 +6,8 @@ output: github_document
 
 ```{r, message=FALSE}
 library(tidyverse)
+library(ggridges)
+library(hexbin)
 
 knitr::opts_chunk$set(
   fig.width = 6,
@@ -243,6 +245,64 @@ accel_df %>%
 He starts his activities around 5h and diminishes it around 22h. On sundays, the patient is more active around noon while during other days of the week he is more active at night. There is somewhat of a peak in activity around 17-18h on weekends apparently.
 
 ### Problem 3
+
+```{r}
+library(p8105.datasets)
+data("ny_noaa")
+```
+
+*Write a short description of the dataset, noting the size and structure of the data, describing some key variables, and indicating the extent to which missing data is an issue.**
+
+The _my_noaa_ dataset contains data for all New York state weather stations from January 1, 1981 through December 31, 2010 acquired from the `rnoaa` package. The dataset has `r nrow(ny_noaa)` rows and `r ncol(ny_noaa)` columns, and it contains daily information on precipitation, snowfall, snow depth, and maximum and minimum temperatures. The dataset contains `r (ny_noaa %>% nrow()) - (ny_noaa %>% drop_na() %>% nrow())` days(`r round((nrow(ny_noaa) - (ny_noaa %>% drop_na() %>% nrow()))/(nrow(ny_noaa))*100, digits = 2)`%) with missing observations.
+
+**Do some data cleaning. Create separate variables for year, month, and day. Ensure observations for temperature, precipitation, and snowfall are given in reasonable units.**
+
+```{r}
+ny_noaa_clean =
+ny_noaa %>%
+  mutate(
+    prcp = prcp/10,
+    tmax = as.numeric(tmax),
+    tmin = as.numeric(tmin),
+    tmax = tmax/10,
+    tmin = tmin/10
+    ) %>% 
+  separate(date, into = c("year", "month", "day"), sep = "-", convert = TRUE)
+```
+
+**For snowfall, what are the most commonly observed values? Why?**
+
+```{r}
+ny_noaa_clean %>% 
+  count(snow) %>% 
+  arrange(desc(n))
+```
+
+The most common observed values for snow in the dataset is 0 and NA. This happens because since _snow_ can take any value from 0 upwards, and in NY there are more days witout snow, it will be right skewed with many days with 0mm of snow. Also, there is a lot of missing data in this dataset, all coded the same.
+
+**Make a two-panel plot showing the average max temperature in January and in July in each station across years. Is there any observable / interpretable structure? Any outliers?**
+
+```{r}
+ny_noaa_clean %>%
+  drop_na(tmax) %>% 
+  group_by(id, year, month) %>% 
+  mutate(
+    mean_tmax = mean(tmax),
+    month = month.name[month]
+  ) %>%
+  filter(month %in% c("January", "July")) %>%
+  ggplot(aes(x = year, y = mean_tmax)) +
+  geom_hex() +
+  facet_grid(.~month) + 
+  labs(
+    x = "Year",
+    y = "Mean Maximum daily Temperature (ºC)",
+    fill = "# of NYS Weather Stations"
+  )
+```
+
+
+**Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.**
 
 ```{r, include = FALSE}
 #live session
