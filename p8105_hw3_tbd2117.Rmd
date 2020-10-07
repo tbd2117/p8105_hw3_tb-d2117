@@ -8,6 +8,7 @@ output: github_document
 library(tidyverse)
 library(ggridges)
 library(hexbin)
+library(patchwork)
 
 knitr::opts_chunk$set(
   fig.width = 6,
@@ -301,12 +302,32 @@ ny_noaa_clean %>%
   )
 ```
 
+The max temperature seems to be more variable for january than July across stations. 1983 and 2006 seems to be outliers for lowest values of mean meax temperatures in January, while 1988 seem to have low values for max temperature in July.
 
 **Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.**
 
-```{r, include = FALSE}
-#live session
+```{r}
+plot_i =
+  ny_noaa_clean %>%
+    drop_na(tmax, tmin) %>% 
+    ggplot(aes(x = tmin, y = tmax)) + 
+    geom_hex() + 
+    labs(
+      x = "Minimum daily Temperature (ºC)",
+      y = "Maximum daily Temperature (ºC)",
+      fill = "NYS Weather Stations (n)"
+    )
 
-#3 plot1 - contour/ hex (not scatter)  plot2 ridge  patchwork
+plot_ii = 
+  ny_noaa_clean %>%
+  filter(snow < 100, snow > 0) %>%
+  mutate(year = factor(year)) %>% 
+  ggplot(aes(x = snow, y = year)) + 
+  geom_density_ridges() +
+  labs(
+    x = "Snowfall (mm)",
+    y = "Year"
+  )
+
+plot_i + plot_ii
 ```
-
