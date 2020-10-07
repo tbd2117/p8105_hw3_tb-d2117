@@ -223,19 +223,24 @@ He tended to be fairly active during weekends, except for the last two weeks - h
 
 **Accelerometer data allows the inspection activity over the course of the day. Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.**
 
-```{r, include = FALSE}
-#live session
-
-#1 pivot
-#make sure values are numeric for activity in each minute
-
-#2 group_by(day) %>% 
-#summarise()
-
-#3 ggplot - x = minutes, y = activity count, color = day of the week
-#geom_line
-  
+```{r}
+accel_df %>% 
+  ggplot(aes(x = minute, y = activity, color = day))+
+  geom_line() + 
+  labs(
+    title = "Activity of Mr. X",
+    x = "Minute of the Day",
+    y = "Activity",
+      caption = "63 year-old, male, BMI 25"
+  ) + 
+  scale_x_continuous(
+    limits = c(0, 1440),
+    breaks = c(0, 360, 720, 1080, 1440),
+    labels = c("00:00", "06:00", "12:00", "18:00", "00:00")
+  )
 ```
+
+He starts his activities around 5h and diminishes it around 22h. On sundays, the patient is more active around noon while during other days of the week he is more active at night. There is somewhat of a peak in activity around 17-18h on weekends apparently.
 
 ### Problem 3
 
